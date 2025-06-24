@@ -1,1 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adobe Stock Asset Scraper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Simple animation for the loading spinner */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-left-color: #38bdf8; /* light blue */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        .copy-btn-icon {
+            transition: transform 0.2s ease-in-out;
+        }
+        .copy-btn:hover .copy-btn-icon {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-3xl bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-8">
+        <!-- Header Section -->
+        <div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-center text-cyan-400">Adobe Stock Scraper</h1>
+            <p class="text-center text-gray-400 mt-2">Paste an Adobe Stock asset link to extract its title and keywords.</p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="space-y-4">
+            <label for="adobeStockUrl" class="block text-sm font-medium text-gray-300">Asset URL</label>
+            <input type="url" id="adobeStockUrl" placeholder="https://stock.adobe.com/..." class="w-full bg-gray-700 border-2 border-gray-600 text-white rounded-lg p-3 focus:border-cyan-500 focus:ring-cyan-500 transition duration-200 ease-in-out" />
+            <button id="scrapeButton" class="w-full flex items-center justify-center bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 rounded-lg transition-transform transform hover:scale-105 active:scale-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50">
+                <span id="buttonText">Extract Data</span>
+                <div id="loadingSpinner" class="spinner ml-3 hidden"></div>
+            </button>
+        </div>
+
+        <!-- Status & Error Messages -->
+        <div id="statusMessage" class="text-center p-3 rounded-lg hidden"></div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden space-y-6 pt-4 border-t border-gray-700">
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-lg font-bold text-cyan-400">Asset Title</h2>
+                    <button id="copyTitleBtn" class="copy-btn flex items-center gap-2 text-sm bg-gray-600 hover:bg-cyan-800 px-3 py-1 rounded-md transition-colors">
+                        <svg class="copy-btn-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <p id="assetTitle" class="text-xl font-semibold bg-gray-700 p-4 rounded-lg"></p>
+            </div>
+            <div>
+                 <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold text-cyan-400">Keywords</h2>
+                    <button id="copyKeywordsBtn" class="copy-btn flex items-center gap-2 text-sm bg-gray-600 hover:bg-cyan-800 px-3 py-1 rounded-md transition-colors">
+                        <svg class="copy-btn-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <div id="assetKeywords" class="flex flex-wrap gap-2">
+                    <!-- Keywords will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DOM Element References ---
+        const urlInput = document.getElementById('adobeStockUrl');
+        const scrapeButton = document.getElementById('scrapeButton');
+        const buttonText = document.getElementById('buttonText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const statusMessage = document.getElementById('statusMessage');
+        const resultsDiv = document.getElementById('results');
+        const assetTitleDiv = document.getElementById('assetTitle');
+        const assetKeywordsDiv = document.getElementById('assetKeywords');
+        const copyTitleBtn = document.getElementById('copyTitleBtn');
+        const copyKeywordsBtn = document.getElementById('copyKeywordsBtn');
+
+        // --- Event Listener ---
+        scrapeButton.addEventListener('click', handleScrape);
+        urlInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') handleScrape();
+        });
+
+        /**
+         * Main handler function to initiate the scraping process.
+         */
+        async function handleScrape() {
+            const url = urlInput.value.trim();
+
+            if (!url || !url.includes('stock.adobe.com')) {
+                showStatus(url ? 'The URL must be from stock.adobe.com.' : 'Please enter an Adobe Stock URL.', 'error');
+                return;
+            }
+
+            setLoadingState(true);
+            clearResults();
+
+            try {
+                // Using a CORS proxy to bypass browser restrictions on fetching cross-origin content
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error(`Network response was not ok. Status: ${response.status}`);
+                
+                const html = await response.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+
+                let title = null;
+                let keywords = [];
+
+                // --- Method A: Try JSON-LD script (standardized data, most reliable) ---
+                try {
+                    const scriptElement = doc.querySelector('script[type="application/ld+json"]');
+                    if (scriptElement) {
+                        const jsonData = JSON.parse(scriptElement.textContent);
+                        title = jsonData.name;
+                        const keywordsString = jsonData.keywords || '';
+                        keywords = keywordsString ? keywordsString.split(',').map(k => k.trim()).filter(Boolean) : [];
+                        if (title && keywords.length > 0) {
+                             console.log("Success with Method A (JSON-LD)");
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Method A (JSON-LD) failed. Trying next method.", e);
+                }
+
+                // --- Method B: Fallback to embedded JSON state object (internal API data) ---
+                if (!title || keywords.length === 0) {
+                    try {
+                        const scripts = doc.querySelectorAll('script');
+                        const assetDataScript = Array.from(scripts).find(s => s.textContent.trim().startsWith('window.__ASSETS_DETAIL_STATE__'));
+                        if (assetDataScript) {
+                            const jsonString = assetDataScript.textContent.replace('window.__ASSETS_DETAIL_STATE__ =', '').trim().slice(0, -1);
+                            const jsonData = JSON.parse(jsonString);
+                            const assetDetails = Object.values(jsonData.details)[0];
+                            if (assetDetails) {
+                                title = title || assetDetails.title;
+                                if (keywords.length === 0 && assetDetails.keywords) {
+                                    keywords = assetDetails.keywords.map(k => k.name);
+                                }
+                                if (title && keywords.length > 0) console.log("Success with Method B (JSON State)");
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("Method B (JSON State) failed. Trying next method.", e);
+                    }
+                }
+
+                // --- Method C: Fallback to scraping Meta and HTML tags (most brittle, but necessary) ---
+                if (!title || keywords.length === 0) {
+                     console.log("Methods A & B failed or were incomplete. Trying flexible Meta & HTML Tag scraping (Method C).");
+                     try {
+                        // C.1: Try meta tags first (often more stable than classes)
+                        if (!title) {
+                            const metaTitle = doc.querySelector('meta[property="og:title"]') || doc.querySelector('meta[name="twitter:title"]');
+                            if (metaTitle) {
+                                title = metaTitle.getAttribute('content');
+                                if(title) console.log("Found title with meta tag.");
+                            }
+                        }
+                        if (keywords.length === 0) {
+                            const metaKeywords = doc.querySelector('meta[name="keywords"]');
+                            if (metaKeywords) {
+                                const keywordsString = metaKeywords.getAttribute('content') || '';
+                                keywords = keywordsString ? keywordsString.split(',').map(k => k.trim()).filter(Boolean) : [];
+                                if(keywords.length > 0) console.log("Found keywords with meta tag.");
+                            }
+                        }
+
+                        // C.2: Try to get title from various known HTML selectors
+                        if (!title) {
+                            const titleSelectors = [
+                                'h1[data-test="asset-title"]', // Primary for new layouts
+                                'h1[itemprop="name"]',
+                                'h1[class*="Detail_title"]', 
+                                'h1.video-title',
+                                'h1[data-t="asset-title"]',
+                                'p[data-t="asset-title"]',
+                            ];
+                            for (const selector of titleSelectors) {
+                                const titleElement = doc.querySelector(selector);
+                                if (titleElement) {
+                                    const tempDiv = titleElement.cloneNode(true);
+                                    tempDiv.querySelectorAll('button, span, a').forEach(el => el.remove());
+                                    title = tempDiv.textContent.trim();
+                                    if (title) {
+                                        console.log(`Found title with HTML selector: ${selector}`);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // C.3: Try to get keywords from various known HTML selectors
+                        if (keywords.length === 0) {
+                            const keywordSelectors = [
+                                // **DEFINITIVE FIX FOR VIDEO/MODERN KEYWORDS**
+                                'div[data-test="keywords"] a', 
+                                // Reliable fallbacks
+                                'div[data-t="keywords"] a',
+                                'div.as-keywords-container a',
+                                'div[itemprop="keywords"] a',
+                                'div[class*="Keywords_container"] a',
+                                'a.js-keyword-link',
+                                'a.badge--default',
+                                'div[data-t="details-panel-keywords-text"] span',
+                            ];
+
+                            for (const selector of keywordSelectors) {
+                                const keywordElements = doc.querySelectorAll(selector);
+                                if (keywordElements.length > 0) {
+                                    const foundKeywords = Array.from(keywordElements)
+                                        .map(el => el.textContent.trim())
+                                        .filter(k => k && k.toLowerCase() !== 'view all' && k.length > 1);
+                                    
+                                    if (foundKeywords.length > 0) {
+                                         console.log(`Found keywords with HTML selector: ${selector}`);
+                                         keywords = [...new Set(foundKeywords)];
+                                         break;
+                                    }
+                                }
+                            }
+                        }
+                        
+                     } catch (e) {
+                         console.warn("Method C (Meta & HTML Tags) failed.", e);
+                     }
+                }
+
+                // --- Final Check & Debug Logging ---
+                if (!title && keywords.length === 0) {
+                    console.error("All scraping methods failed. The Adobe Stock page structure has likely changed. Pasting the body of the fetched document below for inspection:");
+                    console.log(doc.body.innerHTML);
+                    throw new Error('Could not extract data. All methods failed. Check the console for page HTML to find new selectors.');
+                }
+
+                displayResults(title || 'Title not found', [...new Set(keywords)]);
+
+            } catch (error) {
+                console.error('Scraping failed:', error);
+                showStatus(error.message, 'error');
+            } finally {
+                setLoadingState(false);
+            }
+        }
+        
+        /**
+         * Updates the UI to show or hide the loading state.
+         * @param {boolean} isLoading - True to show loading, false to hide.
+         */
+        function setLoadingState(isLoading) {
+            scrapeButton.disabled = isLoading;
+            buttonText.textContent = isLoading ? 'Extracting...' : 'Extract Data';
+            loadingSpinner.classList.toggle('hidden', !isLoading);
+            statusMessage.classList.add('hidden');
+        }
+
+        /**
+         * Clears previous results and hides the results container.
+         */
+        function clearResults() {
+            resultsDiv.classList.add('hidden');
+            assetTitleDiv.textContent = '';
+            assetKeywordsDiv.innerHTML = '';
+        }
+
+        /**
+         * Displays a status or error message to the user.
+         * @param {string} message - The message to display.
+         * @param {'error' | 'info'} type - The type of message for styling.
+         */
+        function showStatus(message, type = 'info') {
+            statusMessage.textContent = message;
+            statusMessage.className = 'text-center p-3 rounded-lg';
+            statusMessage.classList.add(type === 'error' ? 'bg-red-900' : 'bg-blue-900', type === 'error' ? 'text-red-200' : 'text-blue-200');
+            statusMessage.classList.remove('hidden');
+        }
+        
+        /**
+         * Copies text to the clipboard and provides user feedback.
+         * @param {string} textToCopy - The string to be copied.
+         * @param {HTMLElement} buttonElement - The button that was clicked.
+         */
+        function copyToClipboard(textToCopy, buttonElement) {
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            try {
+                // execCommand is deprecated but necessary here for iFrame compatibility
+                document.execCommand('copy');
+                const originalText = buttonElement.querySelector('span').textContent;
+                buttonElement.querySelector('span').textContent = 'Copied!';
+                setTimeout(() => {
+                    buttonElement.querySelector('span').textContent = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showStatus('Failed to copy text.', 'error');
+            }
+            document.body.removeChild(tempTextArea);
+        }
+
+        /**
+         * Renders the extracted title and keywords onto the page and sets up copy buttons.
+         * @param {string} title - The asset title.
+         * @param {string[]} keywords - An array of keyword strings.
+         */
+        function displayResults(title, keywords) {
+            assetTitleDiv.textContent = title;
+            assetKeywordsDiv.innerHTML = ''; // Clear previous keywords
+
+            if (keywords.length > 0) {
+                keywords.forEach(keyword => {
+                    const keywordEl = document.createElement('span');
+                    keywordEl.textContent = keyword;
+                    keywordEl.className = 'bg-gray-600 text-gray-200 px-3 py-1 rounded-full text-sm font-medium';
+                    assetKeywordsDiv.appendChild(keywordEl);
+                });
+            } else {
+                assetKeywordsDiv.innerHTML = '<p class="text-gray-400">No keywords found for this asset.</p>';
+            }
+
+            // --- Set up Copy Button Event Listeners ---
+            copyTitleBtn.onclick = () => copyToClipboard(title, copyTitleBtn);
+            copyKeywordsBtn.onclick = () => copyToClipboard(keywords.join(', '), copyKeywordsBtn);
+            
+            resultsDiv.classList.remove('hidden');
+            statusMessage.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
 
