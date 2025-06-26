@@ -12,23 +12,29 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Simple animation for the loading spinner */
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         .spinner {
             border: 4px solid rgba(255, 255, 255, 0.2);
-            border-left-color: #38bdf8; /* light blue */
+            border-left-color: #38bdf8;
             border-radius: 50%;
             width: 24px;
             height: 24px;
             animation: spin 1s linear infinite;
         }
-        .copy-btn-icon {
-            transition: transform 0.2s ease-in-out;
+        .action-btn {
+            transition: all 0.2s ease-in-out;
         }
-        .copy-btn:hover .copy-btn-icon {
-            transform: scale(1.1);
+        .action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: scale(1);
+            box-shadow: none;
         }
     </style>
 </head>
@@ -59,22 +65,32 @@
             <div>
                 <div class="flex justify-between items-center mb-2">
                     <h2 class="text-lg font-bold text-cyan-400">Asset Title</h2>
-                    <button id="copyTitleBtn" class="copy-btn flex items-center gap-2 text-sm bg-gray-600 hover:bg-cyan-800 px-3 py-1 rounded-md transition-colors">
-                        <svg class="copy-btn-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    <button id="copyTitleBtn" class="action-btn flex items-center gap-2 text-sm bg-gray-600 hover:bg-cyan-800 px-3 py-1 rounded-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         <span>Copy</span>
                     </button>
                 </div>
                 <p id="assetTitle" class="text-xl font-semibold bg-gray-700 p-4 rounded-lg"></p>
             </div>
             <div>
-                 <div class="flex justify-between items-center mb-3">
+                 <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
                     <h2 class="text-lg font-bold text-cyan-400">Keywords</h2>
-                    <button id="copyKeywordsBtn" class="copy-btn flex items-center gap-2 text-sm bg-gray-600 hover:bg-cyan-800 px-3 py-1 rounded-md transition-colors">
-                        <svg class="copy-btn-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                        <span>Copy</span>
-                    </button>
+                    <div class="flex items-center gap-2 flex-wrap justify-end">
+                        <button id="randomizeAllBtn" title="Randomize all keywords" class="action-btn flex items-center gap-2 text-sm bg-gray-600 hover:bg-cyan-800 px-3 py-1 rounded-md">
+                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
+                            <span>Randomize</span>
+                        </button>
+                         <button id="randomizeKeepTopBtn" title="Randomize keywords after the first 10" class="action-btn flex items-center gap-2 text-sm bg-gray-600 hover:bg-cyan-800 px-3 py-1 rounded-md">
+                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H4.5a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+                             <span>Keep 10</span>
+                        </button>
+                        <button id="copyKeywordsBtn" class="action-btn flex items-center gap-2 text-sm bg-gray-600 hover:bg-cyan-800 px-3 py-1 rounded-md">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
                 </div>
-                <div id="assetKeywords" class="flex flex-wrap gap-2">
+                <div id="assetKeywords" class="flex flex-wrap gap-2 p-4 bg-gray-700 rounded-lg min-h-[50px]">
                     <!-- Keywords will be dynamically inserted here -->
                 </div>
             </div>
@@ -94,40 +110,59 @@
         const assetKeywordsDiv = document.getElementById('assetKeywords');
         const copyTitleBtn = document.getElementById('copyTitleBtn');
         const copyKeywordsBtn = document.getElementById('copyKeywordsBtn');
+        const randomizeAllBtn = document.getElementById('randomizeAllBtn');
+        const randomizeKeepTopBtn = document.getElementById('randomizeKeepTopBtn');
 
-        // --- Event Listener ---
+        // --- State ---
+        let originalKeywords = [];
+
+        // --- Event Listeners ---
         scrapeButton.addEventListener('click', handleScrape);
         urlInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter') handleScrape();
         });
 
-        /**
-         * Main handler function to initiate the scraping process.
-         */
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex > 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        randomizeAllBtn.addEventListener('click', () => {
+            const shuffled = shuffleArray([...originalKeywords]);
+            renderKeywords(shuffled);
+        });
+
+        randomizeKeepTopBtn.addEventListener('click', () => {
+            if (originalKeywords.length <= 10) return;
+            const top10 = originalKeywords.slice(0, 10);
+            const rest = originalKeywords.slice(10);
+            const shuffledRest = shuffleArray(rest);
+            renderKeywords([...top10, ...shuffledRest]);
+        });
+        
         async function handleScrape() {
             const url = urlInput.value.trim();
-
             if (!url || !url.includes('stock.adobe.com')) {
                 showStatus(url ? 'The URL must be from stock.adobe.com.' : 'Please enter an Adobe Stock URL.', 'error');
                 return;
             }
-
             setLoadingState(true);
             clearResults();
-
             try {
-                // Using a CORS proxy to bypass browser restrictions on fetching cross-origin content
                 const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
                 const response = await fetch(proxyUrl);
                 if (!response.ok) throw new Error(`Network response was not ok. Status: ${response.status}`);
-                
                 const html = await response.text();
                 const doc = new DOMParser().parseFromString(html, 'text/html');
-
                 let title = null;
                 let keywords = [];
 
-                // --- Method A: Try JSON-LD script (standardized data, most reliable) ---
+                // Method A: JSON-LD
                 try {
                     const scriptElement = doc.querySelector('script[type="application/ld+json"]');
                     if (scriptElement) {
@@ -135,15 +170,11 @@
                         title = jsonData.name;
                         const keywordsString = jsonData.keywords || '';
                         keywords = keywordsString ? keywordsString.split(',').map(k => k.trim()).filter(Boolean) : [];
-                        if (title && keywords.length > 0) {
-                             console.log("Success with Method A (JSON-LD)");
-                        }
+                        if (title && keywords.length > 0) console.log("Success with Method A (JSON-LD)");
                     }
-                } catch (e) {
-                    console.warn("Method A (JSON-LD) failed. Trying next method.", e);
-                }
+                } catch (e) { console.warn("Method A (JSON-LD) failed.", e); }
 
-                // --- Method B: Fallback to embedded JSON state object (internal API data) ---
+                // Method B: Embedded JSON state
                 if (!title || keywords.length === 0) {
                     try {
                         const scripts = doc.querySelectorAll('script');
@@ -160,101 +191,62 @@
                                 if (title && keywords.length > 0) console.log("Success with Method B (JSON State)");
                             }
                         }
-                    } catch (e) {
-                        console.warn("Method B (JSON State) failed. Trying next method.", e);
-                    }
+                    } catch (e) { console.warn("Method B (JSON State) failed.", e); }
                 }
 
-                // --- Method C: Fallback to scraping Meta and HTML tags (most brittle, but necessary) ---
+                // Method C: HTML Tag Scraping (Reverted to broader list)
                 if (!title || keywords.length === 0) {
-                     console.log("Methods A & B failed or were incomplete. Trying flexible Meta & HTML Tag scraping (Method C).");
+                     console.log("Using Fallback HTML Scraping (Method C).");
                      try {
-                        // C.1: Try meta tags first (often more stable than classes)
+                        // C.1: Title selectors
                         if (!title) {
-                            const metaTitle = doc.querySelector('meta[property="og:title"]') || doc.querySelector('meta[name="twitter:title"]');
-                            if (metaTitle) {
-                                title = metaTitle.getAttribute('content');
-                                if(title) console.log("Found title with meta tag.");
-                            }
+                             const titleSelectors = ['h1[data-test="asset-title"]', 'meta[property="og:title"]', 'h1[itemprop="name"]'];
+                             for (const selector of titleSelectors) {
+                                const el = doc.querySelector(selector);
+                                if (el) { 
+                                    title = el.tagName === 'META' ? el.getAttribute('content') : el.textContent.trim();
+                                    if (title) { console.log(`Found title with selector: ${selector}`); break; }
+                                 }
+                             }
                         }
+                        // C.2: Keyword selectors - Using broader, more resilient list
                         if (keywords.length === 0) {
-                            const metaKeywords = doc.querySelector('meta[name="keywords"]');
-                            if (metaKeywords) {
-                                const keywordsString = metaKeywords.getAttribute('content') || '';
-                                keywords = keywordsString ? keywordsString.split(',').map(k => k.trim()).filter(Boolean) : [];
-                                if(keywords.length > 0) console.log("Found keywords with meta tag.");
-                            }
-                        }
-
-                        // C.2: Try to get title from various known HTML selectors
-                        if (!title) {
-                            const titleSelectors = [
-                                'h1[data-test="asset-title"]', // Primary for new layouts
-                                'h1[itemprop="name"]',
-                                'h1[class*="Detail_title"]', 
-                                'h1.video-title',
-                                'h1[data-t="asset-title"]',
-                                'p[data-t="asset-title"]',
+                             const keywordSelectors = [
+                                 'div[data-test="keywords"] a',
+                                 'meta[name="keywords"]',
+                                 'div[data-t="keywords"] a',
+                                 'div.as-keywords-container a',
+                                 'div[itemprop="keywords"] a',
+                                 'div[class*="Keywords_container"] a',
+                                 'a.js-keyword-link',
+                                 'a.badge--default',
+                                 'div[data-t="details-panel-keywords-text"] span',
                             ];
-                            for (const selector of titleSelectors) {
-                                const titleElement = doc.querySelector(selector);
-                                if (titleElement) {
-                                    const tempDiv = titleElement.cloneNode(true);
-                                    tempDiv.querySelectorAll('button, span, a').forEach(el => el.remove());
-                                    title = tempDiv.textContent.trim();
-                                    if (title) {
-                                        console.log(`Found title with HTML selector: ${selector}`);
+                             for (const selector of keywordSelectors) {
+                                const elements = doc.querySelectorAll(selector);
+                                if (elements.length > 0) {
+                                    if (elements[0].tagName === 'META') {
+                                        const content = elements[0].getAttribute('content');
+                                        keywords = content ? content.split(',').map(k => k.trim()).filter(Boolean) : [];
+                                    } else {
+                                        keywords = Array.from(elements).map(el => el.textContent.trim()).filter(Boolean);
+                                    }
+
+                                    if (keywords.length > 0) {
+                                        console.log(`Found keywords with selector: ${selector}`);
                                         break;
                                     }
                                 }
-                            }
+                             }
                         }
-                        
-                        // C.3: Try to get keywords from various known HTML selectors
-                        if (keywords.length === 0) {
-                            const keywordSelectors = [
-                                // **DEFINITIVE FIX FOR VIDEO/MODERN KEYWORDS**
-                                'div[data-test="keywords"] a', 
-                                // Reliable fallbacks
-                                'div[data-t="keywords"] a',
-                                'div.as-keywords-container a',
-                                'div[itemprop="keywords"] a',
-                                'div[class*="Keywords_container"] a',
-                                'a.js-keyword-link',
-                                'a.badge--default',
-                                'div[data-t="details-panel-keywords-text"] span',
-                            ];
-
-                            for (const selector of keywordSelectors) {
-                                const keywordElements = doc.querySelectorAll(selector);
-                                if (keywordElements.length > 0) {
-                                    const foundKeywords = Array.from(keywordElements)
-                                        .map(el => el.textContent.trim())
-                                        .filter(k => k && k.toLowerCase() !== 'view all' && k.length > 1);
-                                    
-                                    if (foundKeywords.length > 0) {
-                                         console.log(`Found keywords with HTML selector: ${selector}`);
-                                         keywords = [...new Set(foundKeywords)];
-                                         break;
-                                    }
-                                }
-                            }
-                        }
-                        
-                     } catch (e) {
-                         console.warn("Method C (Meta & HTML Tags) failed.", e);
-                     }
+                     } catch (e) { console.warn("Method C (HTML Tags) failed.", e); }
                 }
 
-                // --- Final Check & Debug Logging ---
                 if (!title && keywords.length === 0) {
-                    console.error("All scraping methods failed. The Adobe Stock page structure has likely changed. Pasting the body of the fetched document below for inspection:");
-                    console.log(doc.body.innerHTML);
-                    throw new Error('Could not extract data. All methods failed. Check the console for page HTML to find new selectors.');
+                    console.error("All scraping methods failed. The page structure may have changed.");
+                    throw new Error('Could not extract data. Please inspect the page and check selectors if issue persists.');
                 }
-
                 displayResults(title || 'Title not found', [...new Set(keywords)]);
-
             } catch (error) {
                 console.error('Scraping failed:', error);
                 showStatus(error.message, 'error');
@@ -263,10 +255,6 @@
             }
         }
         
-        /**
-         * Updates the UI to show or hide the loading state.
-         * @param {boolean} isLoading - True to show loading, false to hide.
-         */
         function setLoadingState(isLoading) {
             scrapeButton.disabled = isLoading;
             buttonText.textContent = isLoading ? 'Extracting...' : 'Extract Data';
@@ -274,44 +262,32 @@
             statusMessage.classList.add('hidden');
         }
 
-        /**
-         * Clears previous results and hides the results container.
-         */
         function clearResults() {
             resultsDiv.classList.add('hidden');
             assetTitleDiv.textContent = '';
             assetKeywordsDiv.innerHTML = '';
+            originalKeywords = [];
         }
 
-        /**
-         * Displays a status or error message to the user.
-         * @param {string} message - The message to display.
-         * @param {'error' | 'info'} type - The type of message for styling.
-         */
         function showStatus(message, type = 'info') {
             statusMessage.textContent = message;
             statusMessage.className = 'text-center p-3 rounded-lg';
-            statusMessage.classList.add(type === 'error' ? 'bg-red-900' : 'bg-blue-900', type === 'error' ? 'text-red-200' : 'text-blue-200');
+            statusMessage.classList.add(type === 'error' ? 'bg-red-900 text-red-200' : 'bg-blue-900 text-blue-200');
             statusMessage.classList.remove('hidden');
         }
         
-        /**
-         * Copies text to the clipboard and provides user feedback.
-         * @param {string} textToCopy - The string to be copied.
-         * @param {HTMLElement} buttonElement - The button that was clicked.
-         */
         function copyToClipboard(textToCopy, buttonElement) {
             const tempTextArea = document.createElement('textarea');
             tempTextArea.value = textToCopy;
             document.body.appendChild(tempTextArea);
             tempTextArea.select();
             try {
-                // execCommand is deprecated but necessary here for iFrame compatibility
                 document.execCommand('copy');
-                const originalText = buttonElement.querySelector('span').textContent;
-                buttonElement.querySelector('span').textContent = 'Copied!';
+                const span = buttonElement.querySelector('span');
+                const originalText = span.textContent;
+                span.textContent = 'Copied!';
                 setTimeout(() => {
-                    buttonElement.querySelector('span').textContent = originalText;
+                    span.textContent = originalText;
                 }, 2000);
             } catch (err) {
                 console.error('Failed to copy text: ', err);
@@ -319,18 +295,11 @@
             }
             document.body.removeChild(tempTextArea);
         }
-
-        /**
-         * Renders the extracted title and keywords onto the page and sets up copy buttons.
-         * @param {string} title - The asset title.
-         * @param {string[]} keywords - An array of keyword strings.
-         */
-        function displayResults(title, keywords) {
-            assetTitleDiv.textContent = title;
-            assetKeywordsDiv.innerHTML = ''; // Clear previous keywords
-
-            if (keywords.length > 0) {
-                keywords.forEach(keyword => {
+        
+        function renderKeywords(keywordsToRender) {
+            assetKeywordsDiv.innerHTML = ''; 
+            if (keywordsToRender.length > 0) {
+                keywordsToRender.forEach(keyword => {
                     const keywordEl = document.createElement('span');
                     keywordEl.textContent = keyword;
                     keywordEl.className = 'bg-gray-600 text-gray-200 px-3 py-1 rounded-full text-sm font-medium';
@@ -339,10 +308,27 @@
             } else {
                 assetKeywordsDiv.innerHTML = '<p class="text-gray-400">No keywords found for this asset.</p>';
             }
+        }
+        
+        function displayResults(title, keywords) {
+            assetTitleDiv.textContent = title;
+            originalKeywords = [...keywords];
+            renderKeywords(originalKeywords);
 
-            // --- Set up Copy Button Event Listeners ---
+            randomizeAllBtn.disabled = keywords.length < 2;
+            randomizeKeepTopBtn.disabled = keywords.length <= 10;
+            copyKeywordsBtn.disabled = keywords.length === 0;
+
             copyTitleBtn.onclick = () => copyToClipboard(title, copyTitleBtn);
-            copyKeywordsBtn.onclick = () => copyToClipboard(keywords.join(', '), copyKeywordsBtn);
+            copyKeywordsBtn.onclick = () => {
+                const currentKeywords = Array.from(assetKeywordsDiv.children)
+                    .map(el => el.textContent)
+                    .filter(t => t.trim() !== '');
+                
+                if (currentKeywords.length > 0) {
+                    copyToClipboard(currentKeywords.join(', '), copyKeywordsBtn);
+                }
+            };
             
             resultsDiv.classList.remove('hidden');
             statusMessage.classList.add('hidden');
@@ -350,4 +336,3 @@
     </script>
 </body>
 </html>
-
